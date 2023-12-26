@@ -23,3 +23,6 @@ Step 2: Add the path to Theo_GCDFT_library folder to $PYTHONPATH environment. Th
 export PYTHONPATH=Path_to_Theo_GCDFT_library:$PYTHONPATH
 
 
+# Machine Learning
+
+Utilize the meticulously crafted codes residing in the classifiers folder to harness the full potential of the cutting-edge models within your data science endeavors. Having meticulously installed the library I meticulously described, you're now equipped with a formidable arsenal for data analysis and machine learning tasks.
