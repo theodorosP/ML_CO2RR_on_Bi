@@ -5,6 +5,10 @@ from ase.io import read
 import pandas as pd
 import matplotlib.pyplot as plt
 
+import getpass
+
+username=getpass.getuser()
+
 class plotting():
 	#define constructor
 	def __init__(self):
@@ -20,6 +24,7 @@ class plotting():
 		self.m_right = 0.98
 		self.m_bottom = 0.17
 		self.m_top = 0.99
+		self.data = self.get_database("../database.js")
 
 	def get_database(self, path):
 		with open(path, "r") as file:
@@ -33,9 +38,11 @@ class plotting():
 	
 	def get_energy_CO2_box_correction(self):
 		word = "GC Correction"
-		loc = "/home/theodoros/PROJ_ElectroCat/theodoros/energy_paths/charge/CO2_box/"
-		struc = read(loc + "OUTCAR")
-		with open( loc +  "/OUTCAR", "r" )  as file:
+		for key in self.data[ "CO2_box" ].keys():
+			path = self.data[ "CO2_box" ][ key ]["path" ]
+		path = path.replace( '~', '/home/' + username )
+		struc = read(path + "/OUTCAR")
+		with open( path +  "/OUTCAR", "r" )  as file:
 			for line_number, line in enumerate(file):
 				if word in line:
 					a = line
@@ -53,9 +60,8 @@ class plotting():
 		return V, omega
 		
 	def get_delta_omega(self, key_word_with_CO2, key_word_without_CO2):
-		data = self.get_database("../database.js")
-		V_CO2, Omega_CO2 = self.get_V_and_omega(key_word_with_CO2, data)
-		V_without_CO2, Omega_without_CO2 = self.get_V_and_omega(key_word_without_CO2, data)
+		V_CO2, Omega_CO2 = self.get_V_and_omega(key_word_with_CO2, self.data)
+		V_without_CO2, Omega_without_CO2 = self.get_V_and_omega(key_word_without_CO2, self.data)
 		index = V_without_CO2.index( V_CO2[0] )
 		V_without_CO2 = V_without_CO2[ index: ]
 		Omega_without_CO2 = Omega_without_CO2[ index: ]
