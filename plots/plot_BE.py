@@ -38,17 +38,19 @@ class plotting():
 	
 	def get_energy_CO2_box_correction(self):
 		word = "GC Correction"
-		for key in self.data[ "CO2_box" ].keys():
-			path = self.data[ "CO2_box" ][ key ]["path" ]
-		path = path.replace( '~', '/home/' + username )
+		for key in self.data[ "CO2" ].keys():
+			path = self.data[ "CO2" ][ key ]["path" ]
+		#path = path.replace( '~', '/home/' + username )
+		#struc = read(path + "/OUTCAR")
+		#with open( path +  "/OUTCAR", "r" )  as file:
+		#	for line_number, line in enumerate(file):
+		#		if word in line:
+		#			a = line
+		#correction = re.findall(r'[-+]?\d*\.\d+|\d+', a)
+		#correction = float(".".join(correction))
 		struc = read(path + "/OUTCAR")
-		with open( path +  "/OUTCAR", "r" )  as file:
-			for line_number, line in enumerate(file):
-				if word in line:
-					a = line
-		correction = re.findall(r'[-+]?\d*\.\d+|\d+', a)
-		correction = float(".".join(correction))
-		return struc.get_potential_energy() - correction 
+		return struc.get_potential_energy()
+		#return struc.get_potential_energy() - correction 
 	
 	def get_V_and_omega(self, key_word, data):
 		V = list()
@@ -84,10 +86,10 @@ class plotting():
 		ax = fig.add_subplot(1, 1, 1 )
 		x_max = -0.7
 		x_min = -2.1
-		y_max = 1.6
-		y_min = -3.5
+		y_max = 0.5
+		y_min = -0.8
 		x_ticks = [-2.0, -1.8, -1.6, -1.4, -1.2, -1.0, -0.8]
-		y_ticks = [-3.5, -2.5, -1.5, -0.5, 0, 0.5, 1.5]
+		y_ticks = [-0.5, 0, 0.5]
 		Lx = x_max - x_min
 		Ly = y_max - y_min
 		ax.set_ylim( y_min, y_max )
