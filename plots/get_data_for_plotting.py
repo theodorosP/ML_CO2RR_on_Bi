@@ -25,9 +25,19 @@ class forces:
 		for key in self.data[ key_word ].keys():
 			path = self.data[ key_word ][ key ]["path" ]
 		path = path.replace( '~', '/home/' + username )
-		#print(path)
 		return path	
 			
+
+	def get_path_for_BE(self, key_word):
+		path = self.data[ key_word ][ "-1.4" ]["path"]
+		path = path.replace( '~', '/home/' + username )
+		return path
+	
+	def get_omega(self, key_word):
+		path = self.get_path_for_BE( key_word )
+		struc = read(path + "/OUTCAR")
+		return struc.get_potential_energy()
+
 	def get_magnitude(self, force):
 		magnitude = np.sqrt( force[0]**2 + force[1]**2 + force[2]**2 )
 		return magnitude
@@ -55,6 +65,7 @@ class forces:
 		path = self.get_path( key_word )
 		struc = read(path + "/OUTCAR")
 		return struc.get_distance(Bi_atom, C_atom)
+
 
 	def get_angles(self, key_word, O1, C, O2):
 		path = self.get_path( key_word )
@@ -126,7 +137,6 @@ class forces:
 				f_tot += f
 			magnitude = self.get_magnitude(f_tot)
 			forces.append( magnitude )
-		print(key_word, forces)
 		return forces
 
 	def get_plotting_dataframe(self):
@@ -143,7 +153,6 @@ class forces:
 		distances.append( obj.get_distance( "bader_NoCation", 23, 96) )
 		angles.append(obj.get_angles("bader_NoCation", 97, 96, 98) )
 		charge_CO2.append( obj.get_dataframe("bader_NoCation")["charge"][97] + obj.get_dataframe("bader_NoCation")["charge"][96] + obj.get_dataframe("bader_NoCation")["charge"][98] )
-		print("NoCation", NoCation)		
 
 		distances.append(obj.get_distance("bader_Na_top", 23, 96) )
 		angles.append(obj.get_angles("bader_Na_top", 97, 96, 98) )
@@ -191,6 +200,18 @@ class forces:
 		charge_CO2.append( obj.get_dataframe("bader_CH3_4N_side")["charge"][115] + obj.get_dataframe("bader_CH3_4N_side")["charge"][99] + obj.get_dataframe("bader_CH3_4N_side")["charge"][114] )
 		CH3_4N_side = obj.get_total_force("bader_CH3_4N_side", [114, 115], [96, 97, 98, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113] )
 		
+		omega = list() #CO2 chem no cation
+		omega.append(self.get_omega("CO2 chem no cation") -self.get_omega("clean Bi(111)") - self.get_omega("CO2"))
+		omega.append(self.get_omega("Na_top") -self.get_omega("Na/Bi(111)") - self.get_omega("CO2"))
+		omega.append(self.get_omega("Na_side") -self.get_omega("Na/Bi(111)") - self.get_omega("CO2"))
+		omega.append(self.get_omega("NH4_top") -self.get_omega("NH4/Bi(111)") - self.get_omega("CO2"))
+		omega.append(self.get_omega("NH4_side") -self.get_omega("NH4/Bi(111)") - self.get_omega("CO2"))
+		omega.append(self.get_omega("CO2 CH3NH3 top chem") -self.get_omega("CH3NH3/Bi(111)") - self.get_omega("CO2"))
+		omega.append(self.get_omega("CO2 CH3NH3 side chem") -self.get_omega("CH3NH3/Bi(111)") - self.get_omega("CO2"))
+		omega.append(self.get_omega("CO2 CH3NH3 reversed chem") -self.get_omega("CH3NH3/Bi(111)") - self.get_omega("CO2"))
+		omega.append(self.get_omega("CH3_4N top chem") -self.get_omega("CH3_4N/Bi(111)") - self.get_omega("CO2"))
+		omega.append(self.get_omega("CH3_4N side chem") -self.get_omega("CH3_4N/Bi(111)") - self.get_omega("CO2"))
+
 		df["systems"] = systems
 		for i in [NoCation, Na_top, Na_side, NH4_top, NH4_side,CH3NH3_top, CH3NH3_side, CH3NH3_reversed, CH3_4N_top, CH3_4N_side]:
 			f1.append( i[0] )
@@ -200,6 +221,7 @@ class forces:
 		df["dBi_C"] = distances
 		df["qCO2"] = charge_CO2
 		df["OCO"] = angles
+		df["Omega"] = omega
 		print(df)
 
 obj = forces()
