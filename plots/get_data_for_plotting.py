@@ -122,21 +122,41 @@ class forces:
 
 		dataframe["ZVAL"] = ZVAL
 		return dataframe
+	
+	def get_force(self, key_word, O, Na):
+		dataframe = self.get_dataframe( key_word )
+		d1 = np.array([dataframe["X"][O], dataframe["Y"][O], dataframe["Z"][O]]) - np.array([dataframe["X"][Na], dataframe["Y"][Na], dataframe["Z"][Na]])
+		d2 = d1**2
+		d = d2[0] + d2[1] + d2[2]
+		q = dataframe["charge"][ Na ] *  dataframe["charge"][ O ]
+		f = (self.kc * q/ d**(3/2)) * d1
+		magnitude = self.get_magnitude(f)
+		print(magnitude)
 
 	def get_total_force(self, key_word, oxygen_atoms, cation_atoms):
 		dataframe = self.get_dataframe( key_word )
 		forces = list()
-		for i in oxygen_atoms:
-			f_tot = 0
-			for j in cation_atoms:
-				d1 = np.array([dataframe["X"][j], dataframe["Y"][j], dataframe["Z"][j]]) - np.array([dataframe["X"][i], dataframe["Y"][i], dataframe["Z"][i]])
-				d2 = d1**2
-				d = d2[0] + d2[1] + d2[2]
-				q = dataframe["charge"][ i ] *  dataframe["charge"][ i ]
-				f = [self.kc * q/ d**(3/2)] * d1
-				f_tot += f
-			magnitude = self.get_magnitude(f_tot)
-			forces.append( magnitude )
+		f_O1 = 0
+		f_O2 = 0
+		for i in cation_atoms:
+			d1 = np.array([dataframe["X"][i], dataframe["Y"][i], dataframe["Z"][i]]) - np.array([dataframe["X"][ oxygen_atoms[0] ], dataframe["Y"][ oxygen_atoms[0] ], dataframe["Z"][oxygen_atoms[0]]])
+			d2 = d1**2
+			d = d2[0] + d2[1] + d2[2]
+			q = dataframe["charge"][ i ] *  dataframe["charge"][ i ]
+			f = ( self.kc * q/ d**(3/2) ) * d1
+			f_O1 += f
+		for i in cation_atoms:
+			d1 = np.array([dataframe["X"][i], dataframe["Y"][i], dataframe["Z"][i]]) - np.array([dataframe["X"][oxygen_atoms[1]], dataframe["Y"][oxygen_atoms[1]], dataframe["Z"][oxygen_atoms[1]]])
+			d2 = d1**2
+			d = d2[0] + d2[1] + d2[2]
+			q = dataframe["charge"][ i ] *  dataframe["charge"][ i ]
+			f = ( self.kc * q/ d**(3/2) ) * d1
+			f_O2 += f
+		magnitude1 = self.get_magnitude(f_O1)
+		magnitude2 = self.get_magnitude(f_O2)
+		for i in [magnitude1, magnitude2]:	
+			forces.append( i )
+		print(forces)
 		return forces
 
 	def get_plotting_dataframe(self):
@@ -222,7 +242,18 @@ class forces:
 		df["qCO2"] = charge_CO2
 		df["OCO"] = angles
 		df["Omega"] = omega
+		max_force = list()
+		for i in range( 0, len(df) ):
+			max_force.append( max( df["Fion-O1"][i], df["Fion-O2"][i]) )
+		df["Omax"] = max_force		
 		print(df)
+		return df
 
-obj = forces()
-obj.get_plotting_dataframe()
+if __name__ == "__main__":
+	obj = forces()
+#	obj.get_plotting_dataframe()
+#	print(obj.get_total_force("bader_Na_top", [97, 98], [99] ) )
+	obj.get_force("bader_Na_side", 98, 99)
+	obj.get_force("bader_Na_side", 97, 99)
+#	a = obj.get_dataframe("bader_Na_top")
+#	print(a.to_string())
