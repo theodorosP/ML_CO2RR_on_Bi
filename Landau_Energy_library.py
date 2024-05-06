@@ -92,8 +92,7 @@ class Landau_Energy:
 			for SHE in self.SHE_voltages:
 				keys_to_drop.append( str( pH ) + "_" + str( SHE ) + "_" + "0ML" )
 		return keys_to_drop
-	
-
+		
 	def get_Landau_energy( self ):
 		keys_to_drop = list()
 		Landau_energy = {}
@@ -104,8 +103,6 @@ class Landau_Energy:
 		Landau_energy_drop = { key: value for key, value in Landau_energy.items() if key not in self.keys_to_drop }
 		Landau_energy_per_area = {key: value / self.area  for key, value in Landau_energy_drop.items()}
 		return Landau_energy_per_area 
-
-
 	
 	def get_Landau_energy_for_pH_7( self ):
 		Landau_energy = {}
@@ -115,18 +112,37 @@ class Landau_Energy:
 					Landau_energy[ str( pH ) + "_" + str( SHE ) + "_" + str( coverage ) ] = self.grand_canonical_energy[ "chg_" + str( SHE ) + "_" + str(coverage) ] - self.grand_canonical_energy[ "chg_" + str( SHE ) + "_0ML"  ] - self.number_of_H[ str( coverage ) ] * self.mu_H[ str( pH ) + "_" + str( SHE )  ]        
 		Landau_energy_drop = { key: value for key, value in Landau_energy.items() if key not in self.keys_to_drop }
 		Landau_energy_per_area = {key: value / self.area  for key, value in Landau_energy_drop.items()}
-
 		Landau_energy_pH_7 = {}
 		for key, value in Landau_energy_per_area.items():
 			coverage = key.split('_')[-1].replace( "ML", "" )
 			if coverage not in Landau_energy_pH_7:
 				Landau_energy_pH_7[ coverage ] = list()
 			Landau_energy_pH_7[ coverage ].append( value )
-		for i, j in Landau_energy_pH_7.items():
-			print( i, j )
+		#for i, j in Landau_energy_pH_7.items():
+		#	print( i, j )
 		return Landau_energy_pH_7 
 	
-		
+	def get_BE_per_H( self ):
+		Landau_energy = { key: value * self.area  for key, value in self.dictionary.items() }
+		Landau_energy_V_0 = {}
+		dropping_keys = list()
+		for key in Landau_energy.keys():
+			if key.split("_")[ 1 ] != "0.0":
+				dropping_keys.append( key )
+		Landau_energy_dropped = { key: value for key, value in Landau_energy.items() if key not in dropping_keys }
+		for i, j in Landau_energy_dropped.items():
+			print( i, j )
+		for key, value in Landau_energy_dropped.items():
+			coverage = key.split('_')[ -1 ] 
+			if coverage not in Landau_energy_V_0:
+				Landau_energy_V_0[ coverage ] = list()
+			Landau_energy_V_0[ coverage ].append( value )
+		for key in Landau_energy_V_0.keys():
+			Landau_energy_V_0[ key ] = [ value / self.number_of_H[ key ] for value in Landau_energy_V_0[ key ] ]
+		for key, value  in Landau_energy_V_0.items():
+			print( key, value )
+		return Landau_energy_V_0
+
 	def get_min_Landau_Energy( self, voltage, pH ):
 		min_val = math.inf    
 		dictionary = self.dictionary
@@ -222,5 +238,6 @@ class fix_data():
 
 if __name__ == "__main__":
 	obj = Landau_Energy( pH_down = 0, pH_up = 7 )
-	a = obj.get_all_data_in_dictionary()
-	b = obj.get_Landau_energy_for_pH_7()
+	obj.get_BE_per_H()
+	#a = obj.get_all_data_in_dictionary()
+	#b = obj.get_Landau_energy_for_pH_7()
