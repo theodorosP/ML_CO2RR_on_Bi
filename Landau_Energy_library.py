@@ -118,30 +118,33 @@ class Landau_Energy:
 			if coverage not in Landau_energy_pH_7:
 				Landau_energy_pH_7[ coverage ] = list()
 			Landau_energy_pH_7[ coverage ].append( value )
-		#for i, j in Landau_energy_pH_7.items():
-		#	print( i, j )
 		return Landau_energy_pH_7 
 	
-	def get_BE_per_H( self ):
-		Landau_energy = { key: value * self.area  for key, value in self.dictionary.items() }
-		Landau_energy_V_0 = {}
+	def get_BE_per_H( self, voltage ):
+		binding_energy = {}
+		for SHE in self.SHE_voltages:
+			for coverage in self.coverage_dir:     
+				for pH in range( self.pH_down, self.pH_up + 1 ):
+					binding_energy[ str( pH ) + "_" + str( SHE ) + "_" + str( coverage ) ] = self.grand_canonical_energy[ "chg_" + str( SHE ) + "_" + str(coverage) ] - self.grand_canonical_energy[ "chg_" + str( SHE ) + "_0ML"  ]
+		binding_energy_drop = { key: value for key, value in binding_energy.items() if key not in self.keys_to_drop }
+		binding_energy_V_0 = {}
 		dropping_keys = list()
-		for key in Landau_energy.keys():
-			if key.split("_")[ 1 ] != "0.0":
+		for key in binding_energy_drop.keys():
+			if key.split("_")[ 1 ] !=  str( voltage ):
 				dropping_keys.append( key )
-		Landau_energy_dropped = { key: value for key, value in Landau_energy.items() if key not in dropping_keys }
-		for i, j in Landau_energy_dropped.items():
-			print( i, j )
-		for key, value in Landau_energy_dropped.items():
+		binding_energy_dropped = { key: value for key, value in binding_energy_drop.items() if key not in dropping_keys }
+		for key, value in binding_energy_dropped.items():
 			coverage = key.split('_')[ -1 ] 
-			if coverage not in Landau_energy_V_0:
-				Landau_energy_V_0[ coverage ] = list()
-			Landau_energy_V_0[ coverage ].append( value )
-		for key in Landau_energy_V_0.keys():
-			Landau_energy_V_0[ key ] = [ value / self.number_of_H[ key ] for value in Landau_energy_V_0[ key ] ]
-		for key, value  in Landau_energy_V_0.items():
-			print( key, value )
-		return Landau_energy_V_0
+			if coverage not in binding_energy_V_0:
+				binding_energy_V_0[ coverage ] = list()
+			binding_energy_V_0[ coverage ].append( value )
+		for key in binding_energy_V_0.keys():
+			binding_energy_V_0[ key ] = [ value / self.number_of_H[ key ] for value in binding_energy_V_0[ key ] ] 
+		binding_energy_V_0_f = {}
+		for key, value_list in binding_energy_V_0.items():
+			subtracted_values = [ value - 0.5 * self.energy_H2 for value in value_list ]
+			binding_energy_V_0_f[ key ] = subtracted_values
+		return binding_energy_V_0_f
 
 	def get_min_Landau_Energy( self, voltage, pH ):
 		min_val = math.inf    
@@ -238,6 +241,7 @@ class fix_data():
 
 if __name__ == "__main__":
 	obj = Landau_Energy( pH_down = 0, pH_up = 7 )
-	obj.get_BE_per_H()
+	print( obj.area )
+	#obj.get_BE_per_H( "0.0" )
 	#a = obj.get_all_data_in_dictionary()
 	#b = obj.get_Landau_energy_for_pH_7()
