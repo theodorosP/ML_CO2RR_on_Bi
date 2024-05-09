@@ -152,7 +152,7 @@ class Landau_Energy:
 
 
 	
-	#for all voltages
+	#for all the voltages
 	def get_BE_per_H_2( self ):
 		binding_energy_all_voltages = {}
 		binding_energy = {}
