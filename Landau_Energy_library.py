@@ -34,7 +34,7 @@ class Landau_Energy:
 		return sorted( [ float(re.search(pattern, item).group()) for item in self.Vol_dir ], reverse = True )
 
 	def get_coverage_dir( self ):
-		coverages =  [ i for i in os.listdir( self.loc + "/" + self.Vol_dir[ 0 ] ) if ( i.startswith( "0" ) or i.startswith( "1ML" ) ) ]
+		coverages = [i for i in os.listdir(self.loc + "/" + self.Vol_dir[0]) if (i.startswith("0") or i.startswith("1ML") or i.startswith("1.")  or i.startswith("2") )]
 		return sorted( coverages, key= lambda x: float(x[ : -2 ] ) )
 
 	def get_omega_H2( self ):
@@ -218,7 +218,7 @@ class Landau_Energy:
 		keys =  keys
 		df["Coverage"] = keys
 		df["Landau_Energy"] = Landau_Energy
-		print( df )
+		#print( df )
 		return df
 
 	def get_all_data_in_dictionary( self ):
@@ -227,7 +227,9 @@ class Landau_Energy:
 		for pH in range( 0, self.pH_up + 1 ):
 			df = self.get_data_as_DataFrame( pH = pH )
 			data[ "pH=" + str(pH) ] = df
-		print( data )
+		for key, value in data.items():
+			print( key )
+			print( value )
 		return data
 		
 
@@ -263,6 +265,7 @@ class fix_data():
 		V = self.get_voltages()
 		voltages = list()
 		Landau_Energy = list()
+		coverage = list() #
 		for i in range(0, ( self.up_pH + 1) * len(V)):
 			pH.append( i // len( V ) )
 		voltages = [ i for j in range(0, self.up_pH + 1 ) for i in V ]
@@ -270,18 +273,25 @@ class fix_data():
 		for i in df.keys():
 			for j in range(0, len( df[ "pH=0" ][ "Landau_Energy" ] ) ):
 				Landau_Energy.append( df[ i ][ "Landau_Energy" ][ j ] )
+		for i in df.keys():
+			for j in range(0, len( df[ "pH=0" ][ "Coverage" ] ) ):
+				coverage.append( df[ i ][ "Coverage" ][ j ] )
+
 		data[ "pH" ] =  pH 
 		data[ "V" ] = voltages
 		data[ "Landau_Energy" ] = Landau_Energy
-		
+		data[ "Coverage" ] = coverage	
+
 		data_df = pd.DataFrame( data )
 		pH = np.array(data_df['pH']).reshape( self.up_pH + 1,  len( V ) )
 		Landau_Energy = np.array(data_df['Landau_Energy']).reshape( self.up_pH + 1,  len( V ) )
+		cov = np.array(data_df['Coverage']).reshape( self.up_pH + 1,  len( V ) )
 		V = np.array(data_df['V']).reshape( self.up_pH + 1,  len( V ) )
-		return pH, V, Landau_Energy
+		cov = np.array([[float(value.replace('ML', '')) for value in row] for row in cov])
+		return pH, V, Landau_Energy, cov
 
 if __name__ == "__main__":
 	obj = Landau_Energy( pH_down = 0, pH_up = 7 )
-	obj.get_all_data_in_dictionary()
+	a =  obj.get_all_data_in_dictionary()
 	#a = obj.get_all_data_in_dictionary()
 	#b = obj.get_Landau_energy_for_pH_7()
