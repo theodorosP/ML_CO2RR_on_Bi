@@ -1,3 +1,5 @@
+import json as js
+import os
 import getpass
 import numpy as np
 from ase.io import read
@@ -69,3 +71,19 @@ if __name__ == "__main__":
                 path = str( loc ) +  str( name ) + "/target_potential/"
                 input = { 'path': path, 'note': "" }
                 db_add( database, key, name, input )   # Add to the database
+
+
+    
+        for i in [ "0.0", "-0.5", "-1.0", "-1.5", "-2.0", "-2.5" ]:
+            loc = "~/PROJ_ElectroCat/theodoros/HER/Pt_hol/testing/chg_" + i  + "/"  
+            key = 'NoCation_testing_chg_' + i
+            db_add_key( database, key )
+            for name in [ x for x in os.listdir( convert( loc ) ) ]:
+                #print( str( loc ) +  str( name ) + "/target_potential"  )
+                # Now we need to add all path to all potentials for tihs key
+                path = str( loc ) +  str( name ) + "/target_potential/"
+                input = { 'path': path, 'note': "" }
+                db_add( database, key, name, input )
+
+
+        db_save( database, 'database_theo.js' )  #Save the database
